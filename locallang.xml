@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallang>
+	<meta type="array">
+		<description>Language labels for cc_setsearch</description>
+		<type>module</type>
+	</meta>
+	<data type="array">
+		<languageKey index="default" type="array">
+			<label index="title">Set pages searchable (recursively)</label>
+			<label index="searchable">Searchable</label>
+			<label index="setSearchable">Set searchable</label>
+			<label index="setNonSearchable">Set non-searchable</label>
+		</languageKey>
+		<languageKey index="de" type="array">
+			<label index="title">Seiten für Suche aktivieren (rekursiv)</label>
+			<label index="searchable">Durchsuchbar</label>
+			<label index="setSearchable">für Suche aktivieren</label>
+			<label index="setNonSearchable">für Suche deaktivieren</label>
+		</languageKey>
+	</data>
+</T3locallang>
