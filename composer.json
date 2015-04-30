@@ -1,0 +1,7 @@
+{
+  "name": "visol/cc-setsearch",
+  "type": "typo3-cms-extension",
+  "description": "Web>Func, Wizards, Set pages searchable",
+  "homepage": "https://github.com/visol/ext-cc_setsearch",
+  "license": ["GPL-2.0+"]
+}
