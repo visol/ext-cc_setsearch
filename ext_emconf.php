@@ -31,7 +31,7 @@ $EM_CONF[$_EXTKEY] = array (
 	'author_company' => 'Colorcube - digital media lab',
 	'CGLcompliance' => NULL,
 	'CGLcompliance_note' => NULL,
-	'version' => '1.2.0',
+	'version' => '2.0.0',
 	'constraints' => 
 	array (
 		'depends' => 
