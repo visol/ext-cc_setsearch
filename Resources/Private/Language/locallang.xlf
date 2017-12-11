@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0" xmlns:t3="http://typo3.org/schemas/xliff">
+	<file source-language="en" datatype="plaintext" original="messages" product-name="cc_setsearch">
+		<header/>
+		<body>
+			<trans-unit id="title">
+				<source>Set pages searchable (recursively)</source>
+			</trans-unit>
+			<trans-unit id="searchable">
+				<source>Searchable</source>
+			</trans-unit>
+			<trans-unit id="setSearchable">
+				<source>Set searchable</source>
+			</trans-unit>
+			<trans-unit id="setNonSearchable">
+				<source>Set non-searchable</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

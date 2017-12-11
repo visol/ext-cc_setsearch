@@ -31,13 +31,13 @@ $EM_CONF[$_EXTKEY] = [
     'author_company' => 'Colorcube - digital media lab',
     'CGLcompliance' => null,
     'CGLcompliance_note' => null,
-    'version' => '1.2.0',
+    'version' => '3.0.0',
     'constraints' =>
         [
             'depends' =>
                 [
-                    'typo3' => '6.0.0-6.2.99',
-                    'func_wizards' => '6.0.0-6.2.99',
+                    'typo3' => '8.7.0-8.7.999',
+                    'func' => '8.7.0-8.7.999',
                 ],
             'conflicts' =>
                 [],
