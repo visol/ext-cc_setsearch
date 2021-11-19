@@ -149,7 +149,7 @@ class SetsearchWizardModuleFunctionController extends \TYPO3\CMS\Backend\Module\
             for ($a = $depth; $a > 0; $a--) {
                 if (is_array($tree->ids_hierarchy[$a])) {
                     reset($tree->ids_hierarchy[$a]);
-                    while (list(, $theId) = each($tree->ids_hierarchy[$a])) {
+                    foreach ($tree->ids_hierarchy[$a] as $theId) {
                         if ($this->checkPermissionsForRow($tree->tree[$theId]['row'])) {
                             $uidList[] = $theId;
                         }
