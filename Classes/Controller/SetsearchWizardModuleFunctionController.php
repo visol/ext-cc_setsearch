@@ -179,7 +179,7 @@ class SetsearchWizardModuleFunctionController extends \TYPO3\CMS\Backend\Module\
 
         if ($id) {
             $pageInfo = BackendUtility::readPageAccess($id, ' 1=1');
-            $tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getIcon($id)];
+            $tree->tree[$id] = ['row' => $pageInfo, 'HTML' => $tree->getIcon($id)];
         } else {
             $pageInfo = ['title' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'], 'uid' => 0, 'pid' => 0];
             $tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getRootIcon($pageInfo)];
