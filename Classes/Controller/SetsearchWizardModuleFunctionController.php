@@ -139,21 +139,10 @@ class SetsearchWizardModuleFunctionController extends \TYPO3\CMS\Backend\Module\
 
         $uidList = [];
 
-        if ($this->checkPermissionsForRow($tree->tree[$id]['row'])) {
-            $uidList[] = $id;
-        }
-
-        if ($this->getBackendUser()->user['uid'] && count($tree->ids_hierarchy)) {
-            reset($tree->ids_hierarchy);
-
-            for ($a = $depth; $a > 0; $a--) {
-                if (is_array($tree->ids_hierarchy[$a])) {
-                    reset($tree->ids_hierarchy[$a]);
-                    foreach ($tree->ids_hierarchy[$a] as $theId) {
-                        if ($this->checkPermissionsForRow($tree->tree[$theId]['row'])) {
-                            $uidList[] = $theId;
-                        }
-                    }
+        if ($this->getBackendUser()->user['uid'] && count($tree->tree) > 0) {
+            foreach ($tree->tree as $item) {
+                if ($this->checkPermissionsForRow($item['row'])) {
+                    $uidList[] = $item['row']['uid'];
                 }
             }
         }
@@ -172,14 +161,16 @@ class SetsearchWizardModuleFunctionController extends \TYPO3\CMS\Backend\Module\
         /** @var PageTreeView $tree */
         $tree = GeneralUtility::makeInstance(PageTreeView::class);
         $tree->init(' AND ' . $this->pObj->perms_clause);
-        $tree->setRecs = 1;
-        $tree->makeHTML = true;
-        $tree->thisScript = 'index.php';
         $tree->addField('no_search');
+        $tree->addField('perms_userid');
+        $tree->addField('perms_groupid');
+        $tree->addField('perms_user');
+        $tree->addField('perms_group');
+        $tree->addField('perms_everybody');
 
         if ($id) {
             $pageInfo = BackendUtility::readPageAccess($id, ' 1=1');
-            $tree->tree[$id] = ['row' => $pageInfo, 'HTML' => $tree->getIcon($id)];
+            $tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getIcon($id)];
         } else {
             $pageInfo = ['title' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'], 'uid' => 0, 'pid' => 0];
             $tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getRootIcon($pageInfo)];
