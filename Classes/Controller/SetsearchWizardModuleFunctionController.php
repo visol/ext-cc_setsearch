@@ -139,21 +139,10 @@ class SetsearchWizardModuleFunctionController extends \TYPO3\CMS\Backend\Module\
 
         $uidList = [];
 
-        if ($this->checkPermissionsForRow($tree->tree[$id]['row'])) {
-            $uidList[] = $id;
-        }
-
-        if ($this->getBackendUser()->user['uid'] && count($tree->ids_hierarchy)) {
-            reset($tree->ids_hierarchy);
-
-            for ($a = $depth; $a > 0; $a--) {
-                if (is_array($tree->ids_hierarchy[$a])) {
-                    reset($tree->ids_hierarchy[$a]);
-                    while (list(, $theId) = each($tree->ids_hierarchy[$a])) {
-                        if ($this->checkPermissionsForRow($tree->tree[$theId]['row'])) {
-                            $uidList[] = $theId;
-                        }
-                    }
+        if ($this->getBackendUser()->user['uid'] && count($tree->tree) > 0) {
+            foreach ($tree->tree as $item) {
+                if ($this->checkPermissionsForRow($item['row'])) {
+                    $uidList[] = $item['row']['uid'];
                 }
             }
         }
@@ -172,10 +161,12 @@ class SetsearchWizardModuleFunctionController extends \TYPO3\CMS\Backend\Module\
         /** @var PageTreeView $tree */
         $tree = GeneralUtility::makeInstance(PageTreeView::class);
         $tree->init(' AND ' . $this->pObj->perms_clause);
-        $tree->setRecs = 1;
-        $tree->makeHTML = true;
-        $tree->thisScript = 'index.php';
         $tree->addField('no_search');
+        $tree->addField('perms_userid');
+        $tree->addField('perms_groupid');
+        $tree->addField('perms_user');
+        $tree->addField('perms_group');
+        $tree->addField('perms_everybody');
 
         if ($id) {
             $pageInfo = BackendUtility::readPageAccess($id, ' 1=1');
