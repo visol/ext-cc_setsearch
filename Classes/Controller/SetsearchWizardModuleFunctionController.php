@@ -29,7 +29,8 @@ namespace Visol\CcSetsearch\Controller;
  *
  * @author    René Fritz <r.fritz@colorcube.de>
  */
-
+use TYPO3\CMS\Backend\Routing\UriBuilder;
+use TYPO3\CMS\Backend\Module\AbstractFunctionModule;
 use TYPO3\CMS\Backend\Tree\View\PageTreeView;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
@@ -42,7 +43,7 @@ use TYPO3\CMS\Fluid\View\StandaloneView;
  *
  * @author    René Fritz <r.fritz@colorcube.de>
  */
-class SetsearchWizardModuleFunctionController extends \TYPO3\CMS\Backend\Module\AbstractFunctionModule
+class SetsearchWizardModuleFunctionController extends AbstractFunctionModule
 {
 
     const PERMISSION_EDIT_PAGE = 2;
@@ -74,39 +75,30 @@ class SetsearchWizardModuleFunctionController extends \TYPO3\CMS\Backend\Module\
 
         $view->assign('depth', $depth);
 
-        $depthBaseUrl = BackendUtility::getModuleUrl(
-            'web_func',
-            [
-                'SET' => [
-                    'function' => self::class,
-                ],
-                'id' => $id,
-                'depth' => '__DEPTH__',
-            ]
-        );
+        $depthBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('web_func', [
+            'SET' => [
+                'function' => self::class,
+            ],
+            'id' => $id,
+            'depth' => '__DEPTH__',
+        ]);
         $view->assign('depthBaseUrl', $depthBaseUrl);
 
-        $idBaseUrl = BackendUtility::getModuleUrl(
-            'web_func',
-            [
-                'SET' => [
-                    'function' => self::class,
-                ],
-                'depth' => $depth,
-            ]
-        );
+        $idBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('web_func', [
+            'SET' => [
+                'function' => self::class,
+            ],
+            'depth' => $depth,
+        ]);
         $view->assign('idBaseUrl', $idBaseUrl);
 
-        $cmdBaseUrl = BackendUtility::getModuleUrl(
-            'web_func',
-            [
-                'SET' => [
-                    'function' => self::class,
-                ],
-                'id' => $id,
-                'depth' => $depth,
-            ]
-        );
+        $cmdBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('web_func', [
+            'SET' => [
+                'function' => self::class,
+            ],
+            'id' => $id,
+            'depth' => $depth,
+        ]);
         $view->assign('cmdBaseUrl', $cmdBaseUrl);
 
         $depthOptions = [];
@@ -214,7 +206,7 @@ class SetsearchWizardModuleFunctionController extends \TYPO3\CMS\Backend\Module\
         }
 
         /** @var DataHandler $dataHandler */
-        $dataHandler = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(DataHandler::class);
+        $dataHandler = GeneralUtility::makeInstance(DataHandler::class);
         $dataHandler->start($data, []);
         $dataHandler->process_datamap();
     }
