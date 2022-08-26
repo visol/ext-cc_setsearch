@@ -29,6 +29,7 @@ namespace Visol\CcSetsearch\Controller;
  *
  * @author    René Fritz <r.fritz@colorcube.de>
  */
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Module\AbstractFunctionModule;
 use TYPO3\CMS\Backend\Tree\View\PageTreeView;
@@ -187,7 +188,7 @@ class SetsearchWizardModuleFunctionController extends AbstractFunctionModule
     }
 
     /**
-     * @return \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
+     * @return BackendUserAuthentication
      */
     protected function getBackendUser()
     {
