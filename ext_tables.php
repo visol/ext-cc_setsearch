@@ -1,13 +1,9 @@
 <?php
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use Visol\CcSetsearch\Controller\SetsearchWizardModuleFunctionController;
+
+use Visol\CcSetsearch\ContextMenu\SetSearchItemProvider;
+
 if (!defined('TYPO3')) {
     die ("Access denied.");
 }
 
-ExtensionManagementUtility::insertModuleFunction(
-    "web_func",
-    SetsearchWizardModuleFunctionController::class,
-    null,
-    "LLL:EXT:cc_setsearch/Resources/Private/Language/locallang.xlf:title"
-);
+$GLOBALS['TYPO3_CONF_VARS']['BE']['ContextMenu']['ItemProviders'][1668611778] = SetSearchItemProvider::class;

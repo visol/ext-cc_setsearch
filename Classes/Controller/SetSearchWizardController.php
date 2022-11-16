@@ -2,65 +2,51 @@
 
 namespace Visol\CcSetsearch\Controller;
 
-/***************************************************************
- *  Copyright notice
- *
- *  (c) 2004-2005 René Fritz (r.fritz@colorcube.de)
- *  All rights reserved
- *
- *  This script is part of the TYPO3 project. The TYPO3 project is
- *  free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
-/**
- * Module extension (addition to function menu) 'Set index flag (recursive)' for the 'cc_setsearch' extension.
- *
- * @author    René Fritz <r.fritz@colorcube.de>
- */
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
-use TYPO3\CMS\Backend\Module\AbstractFunctionModule;
 use TYPO3\CMS\Backend\Tree\View\PageTreeView;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
+use TYPO3\CMS\Core\Http\HtmlResponse;
+use TYPO3\CMS\Core\Imaging\IconFactory;
+use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 
-/**
- * Creates the "set searchable" wizard
- *
- * @author    René Fritz <r.fritz@colorcube.de>
- */
-class SetsearchWizardModuleFunctionController extends AbstractFunctionModule
+class SetSearchWizardController
 {
-
     const PERMISSION_EDIT_PAGE = 2;
 
     /**
-     * @return string
+     * @var ModuleTemplate
      */
-    public function main(): string
+    protected $moduleTemplate;
+
+    protected IconFactory $iconFactory;
+    protected ModuleTemplateFactory $moduleTemplateFactory;
+
+    public function __construct()
     {
+        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
+        $this->moduleTemplateFactory = GeneralUtility::makeInstance(ModuleTemplateFactory::class);
+    }
+
+    public function mainAction(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($request);
+
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName(
             'EXT:cc_setsearch/Resources/Private/Templates/Index.html'
         ));
 
-        $id = $this->pObj->id;
-        $depth = GeneralUtility::_GP('depth') ?: 3;
+        $id = (int)$request->getQueryParams()['id'];
+        $depth = (int)GeneralUtility::_GP('depth') ?: 3;
         $cmd = GeneralUtility::_GP('cmd');
 
         switch ($cmd) {
@@ -76,7 +62,7 @@ class SetsearchWizardModuleFunctionController extends AbstractFunctionModule
 
         $view->assign('depth', $depth);
 
-        $depthBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('web_func', [
+        $depthBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('pages_set_search', [
             'SET' => [
                 'function' => self::class,
             ],
@@ -85,7 +71,7 @@ class SetsearchWizardModuleFunctionController extends AbstractFunctionModule
         ]);
         $view->assign('depthBaseUrl', $depthBaseUrl);
 
-        $idBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('web_func', [
+        $idBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('pages_set_search', [
             'SET' => [
                 'function' => self::class,
             ],
@@ -93,7 +79,7 @@ class SetsearchWizardModuleFunctionController extends AbstractFunctionModule
         ]);
         $view->assign('idBaseUrl', $idBaseUrl);
 
-        $cmdBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('web_func', [
+        $cmdBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('pages_set_search', [
             'SET' => [
                 'function' => self::class,
             ],
@@ -115,18 +101,14 @@ class SetsearchWizardModuleFunctionController extends AbstractFunctionModule
         $tree = $this->getPageTree($id, $depth);
         $view->assign('viewTree', $tree->tree);
 
-        return $view->render();
+        $this->moduleTemplate->setContent($view->render());
+        return new HtmlResponse($this->moduleTemplate->renderContent());
     }
 
     /**
      * Return an array of page id's where the user have access to
-     *
-     * @param $id
-     * @param $depth
-     *
-     * @return array
      */
-    protected function getRecursivePageUids($id, $depth): array
+    protected function getRecursivePageUids(int $id, int $depth): array
     {
         $tree = $this->getPageTree($id, $depth);
 
@@ -141,19 +123,16 @@ class SetsearchWizardModuleFunctionController extends AbstractFunctionModule
         }
 
         return $uidList;
-
     }
 
     /**
      * Reads the page tree
-     *
-     * @return PageTreeView
      */
-    protected function getPageTree($id, $depth): PageTreeView
+    protected function getPageTree(int $id, int $depth): PageTreeView
     {
         /** @var PageTreeView $tree */
         $tree = GeneralUtility::makeInstance(PageTreeView::class);
-        $tree->init(' AND ' . $this->pObj->perms_clause);
+        $tree->init(' AND ' . $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW));
         $tree->addField('no_search');
         $tree->addField('perms_userid');
         $tree->addField('perms_groupid');
@@ -187,19 +166,12 @@ class SetsearchWizardModuleFunctionController extends AbstractFunctionModule
         return false;
     }
 
-    /**
-     * @return BackendUserAuthentication
-     */
-    protected function getBackendUser()
+    protected function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
     }
 
-    /**
-     * @param array $uids
-     * @param $value
-     */
-    protected function setNoSearchValue(array $uids, $value)
+    protected function setNoSearchValue(array $uids, int $value)
     {
         $data = [];
         foreach ($uids as $uid) {
