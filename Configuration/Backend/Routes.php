@@ -1,12 +1,12 @@
 <?php
 
 
-use Visol\CcSetsearch\Controller\SetSearchWizardController;
+use Visol\CcSetsearch\Controller\SetSearchController;
 
 return [
     'pages_set_search' => [
         'path' => '/pages/set-search',
-        'target' => SetSearchWizardController::class . '::mainAction',
+        'target' => SetSearchController::class . '::mainAction',
         'redirect' => [
             'enable' => true,
             'parameters' => [
