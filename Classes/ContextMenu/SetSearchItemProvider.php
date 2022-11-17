@@ -9,7 +9,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class SetSearchItemProvider extends RecordProvider
 {
     protected $itemsConfiguration = [
-        'pages_set_search' => [
+        'pagesSetSearch' => [
             'type' => 'item',
             'label' => 'LLL:EXT:cc_setsearch/Resources/Private/Language/locallang.xlf:title',
             'iconIdentifier' => 'actions-search',
@@ -24,7 +24,7 @@ class SetSearchItemProvider extends RecordProvider
 
     public function getPriority(): int
     {
-        return 55;
+        return $this->context === 'tree';
     }
 
     protected function getAdditionalAttributes(string $itemName): array
@@ -45,9 +45,8 @@ class SetSearchItemProvider extends RecordProvider
 
         if (isset($items['more'])) {
             $items['more']['childItems'] +=  $localItems; // we merge the item at the end
-        } else {
-            $items = $items + $localItems;
         }
+
         //passes array of items to the next item provider
         return $items;
     }
@@ -60,7 +59,7 @@ class SetSearchItemProvider extends RecordProvider
         }
         $canRender = false;
         switch ($itemName) {
-            case 'pages_set_search':
+            case 'pagesSetSearch':
                 $canRender = $this->canShow();
                 break;
         }
@@ -69,6 +68,6 @@ class SetSearchItemProvider extends RecordProvider
 
     protected function canShow(): bool
     {
-        return true;
+        return $this->context === 'tree';
     }
 }
