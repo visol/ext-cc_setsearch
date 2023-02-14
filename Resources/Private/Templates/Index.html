@@ -5,12 +5,20 @@
     }
 </script>
 
-<h1><f:translate key="{LLPrefix}title"/></h1>
+<h1>
+    <f:translate key="{LLPrefix}title"/>
+</h1>
 <div>
 
     <div class="form-group">
-        <label for="depth"><f:translate key="LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:Depth" />:</label>
-        <f:form.select class="form-control" id="depth" value="{depth}" options="{depthOptions}" additionalAttributes="{onchange: 'jumpToUrl(\'{depthBaseUrl}\'.replace(\'__DEPTH__\', this.options[this.selectedIndex].value), this);'}" />
+        <label for="depth">
+            <f:translate key="LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:Depth"/>
+            :</label>
+        <f:form.select class="form-control"
+                       id="depth"
+                       value="{depth}"
+                       options="{depthOptions}"
+                       additionalAttributes="{onchange: 'jumpToUrl(\'{depthBaseUrl}\'.replace(\'__DEPTH__\', this.options[this.selectedIndex].value), this);'}"/>
     </div>
 
     <div class="panel panel-default panel-space">
@@ -19,7 +27,19 @@
                 <thead>
                 <tr>
                     <th>&nbsp;</th>
-                    <th><f:translate key="{LLPrefix}searchable"/></th>
+                    <f:for each="{fields}" as="field">
+                        <th style="text-align: center">
+                            <f:translate key="{field.label}"/>
+                            <div class="form-group">
+                                <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default">
+                                    <span class="t3-icon fa fa-check text-success"></span>
+                                </a>
+                                <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default">
+                                    <span class="t3-icon fa fa-times text-danger"></span>
+                                </a>
+                            </div>
+                        </th>
+                    </f:for>
                 </tr>
                 </thead>
                 <f:for each="{viewTree}" as="data">
@@ -30,23 +50,31 @@
                                     A "normal" page row is rendered, not the root page
                                 </f:comment>
 
-                                <td align="left" class="nowrap">
+                                <td style="text-align: left" class="nowrap">
                                     <a href="{idBaseUrl}&id={data.row.uid}">
                                         <f:format.raw>{data.depthData}{data.HTML}</f:format.raw>
                                         {data.row.title -> f:format.crop(maxCharacters:20)}
                                     </a>
                                 </td>
 
-                                <td>
-                                    <f:if condition="{data.row.no_search}">
-                                        <f:then>
-                                            <span class="t3-icon change-permission fa fa-times text-danger"></span>
-                                        </f:then>
-                                        <f:else>
-                                            <span class="t3-icon change-permission fa fa-check text-success"></span>
-                                        </f:else>
-                                    </f:if>
-                                </td>
+                                <f:for each="{fields}" as="field">
+                                    <td style="text-align: center">
+                                        <f:if condition="{data.row.{field.name}}">
+                                            <f:then>
+                                                <span class="t3-icon change-permission fa fa-times text-danger"
+                                                      data-uid="{data.row.uid}"
+                                                      data-field="{field.name}"
+                                                      style="cursor: pointer"></span>
+                                            </f:then>
+                                            <f:else>
+                                                <span class="t3-icon change-permission fa fa-check text-success"
+                                                      data-uid="{data.row.uid}"
+                                                      data-field="{field.name}"
+                                                      style="cursor: pointer"></span>
+                                            </f:else>
+                                        </f:if>
+                                    </td>
+                                </f:for>
                             </f:then>
 
                             <f:else>
@@ -54,7 +82,7 @@
                                     Root page row is rendered
                                 </f:comment>
 
-                                <td align="left" class="nowrap">
+                                <td style="text-align: left" class="nowrap">
                                     <f:format.raw>{data.HTML}</f:format.raw>
                                     {data.row.title -> f:format.crop(maxCharacters:20)}
                                 </td>
@@ -63,12 +91,21 @@
                         </f:if>
                     </tr>
                 </f:for>
+
+                <tr>
+                    <td></td>
+                    <f:for each="{fields}" as="field">
+                        <td style="text-align: center">
+                            <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default">
+                                <span class="t3-icon fa fa-check text-success"></span>
+                            </a>
+                            <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default">
+                                <span class="t3-icon fa fa-times text-danger"></span>
+                            </a>
+                        </td>
+                    </f:for>
+                </tr>
             </table>
         </div>
-    </div>
-
-    <div class="form-group">
-        <a href="{cmdBaseUrl}&cmd=setsearchable" class="btn btn-default">{f:translate(key: '{LLPrefix}setSearchable')}</a>
-        <a href="{cmdBaseUrl}&cmd=setnonsearchable" class="btn btn-default">{f:translate(key: '{LLPrefix}setNonSearchable')}</a>
     </div>
 </div>

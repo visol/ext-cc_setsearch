@@ -6,39 +6,43 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
-use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Tree\View\PageTreeView;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Imaging\IconFactory;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
+use Visol\CcSetsearch\Traits\BackendRecordTrait;
+use Visol\CcSetsearch\Traits\ExtensionConfigurationTrait;
 
-class SetSearchController
+class SetPageController
 {
-    const PERMISSION_EDIT_PAGE = 2;
+    use ExtensionConfigurationTrait;
+    use BackendRecordTrait;
 
-    /**
-     * @var ModuleTemplate
-     */
-    protected $moduleTemplate;
+    protected ModuleTemplate $moduleTemplate;
 
     protected IconFactory $iconFactory;
+
     protected ModuleTemplateFactory $moduleTemplateFactory;
+
+    protected PageRenderer $pageRenderer;
 
     public function __construct()
     {
         $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
         $this->moduleTemplateFactory = GeneralUtility::makeInstance(ModuleTemplateFactory::class);
+        $this->pageRenderer = GeneralUtility::makeInstance(PageRenderer::class);
     }
 
     public function mainAction(ServerRequestInterface $request): ResponseInterface
     {
-        $this->moduleTemplate = $this->moduleTemplateFactory->create($request);
+        // Load additional JS
+        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/CcSetsearch/SetPageAjaxActions');
 
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName(
@@ -46,47 +50,20 @@ class SetSearchController
         ));
 
         $id = (int)$request->getQueryParams()['id'];
-        $depth = (int)GeneralUtility::_GP('depth') ?: 3;
-        $cmd = GeneralUtility::_GP('cmd');
+        $depth = $request->getQueryParams()['depth'] ? (int)$request->getQueryParams()['depth'] : 3;
+        $cmd = $request->getQueryParams()['cmd'];
+        $field = $request->getQueryParams()['field'];
 
-        switch ($cmd) {
-            case 'setsearchable':
-                $uids = $this->getRecursivePageUids($id, $depth);
-                $this->setNoSearchValue($uids, 0);
-                break;
-            case 'setnonsearchable':
-                $uids = $this->getRecursivePageUids($id, $depth);
-                $this->setNoSearchValue($uids, 1);
-                break;
+        // We update the records if required
+        if (in_array($field, $this->getExtensionConfiguration('fields'), true) &&
+            in_array($cmd, ['set', 'unset'])) {
+            $ids = $this->getRecursivePageUids($id, $depth);
+            $this->update($ids, $field, (int)($cmd === 'unset'));
         }
 
-        $view->assign('depth', $depth);
-
-        $depthBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('pages_set_search', [
-            'SET' => [
-                'function' => self::class,
-            ],
-            'id' => $id,
-            'depth' => '__DEPTH__',
-        ]);
-        $view->assign('depthBaseUrl', $depthBaseUrl);
-
-        $idBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('pages_set_search', [
-            'SET' => [
-                'function' => self::class,
-            ],
-            'depth' => $depth,
-        ]);
-        $view->assign('idBaseUrl', $idBaseUrl);
-
-        $cmdBaseUrl = GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('pages_set_search', [
-            'SET' => [
-                'function' => self::class,
-            ],
-            'id' => $id,
-            'depth' => $depth,
-        ]);
-        $view->assign('cmdBaseUrl', $cmdBaseUrl);
+        $view->assign('depthBaseUrl', $this->generateUrl(['id' => $id, 'depth' => '__DEPTH__',]));
+        $view->assign('idBaseUrl', $this->generateUrl(['depth' => $depth,]));
+        $view->assign('cmdBaseUrl', $this->generateUrl(['id' => $id, 'depth' => $depth,]));
 
         $depthOptions = [];
         foreach ([1, 2, 3, 4, 10] as $depthLevel) {
@@ -94,15 +71,50 @@ class SetSearchController
             $depthOptions[$depthLevel] = $depthLevel . ' ' . LocalizationUtility::translate('LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:' . $levelLabel,
                     'beuser');
         }
-        $view->assign('depthOptions', $depthOptions);
 
-        $view->assign('LLPrefix', 'LLL:EXT:cc_setsearch/Resources/Private/Language/locallang.xlf:');
+        $view->assignMultiple([
+            'depth' => $depth,
+            'depthOptions' => $depthOptions,
+            'LLPrefix' => 'LLL:EXT:cc_setsearch/Resources/Private/Language/locallang.xlf:',
+            'viewTree' => $this->getPageTree($id, $depth)->tree,
+            'fields' => $this->getConfiguredFields(),
+        ]);
 
-        $tree = $this->getPageTree($id, $depth);
-        $view->assign('viewTree', $tree->tree);
-
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($request);
         $this->moduleTemplate->setContent($view->render());
         return new HtmlResponse($this->moduleTemplate->renderContent());
+    }
+
+    /**
+     * Just rework the fields array for convenience’s sake.
+     */
+    protected function getConfiguredFields(): array
+    {
+        $fields = $this->getExtensionConfiguration('fields');
+        $labels = $this->getExtensionConfiguration('labels');
+
+        $configuredFields = [];
+        foreach ($fields as $key => $field) {
+            $configuredFields[] = [
+                'name' => $field,
+                'label' => $labels[$key],
+            ];
+        }
+
+        return $configuredFields;
+    }
+
+    protected function generateUrl(array $config): string
+    {
+        $mergedConfiguration = array_merge(
+            [
+                'SET' => [
+                    'function' => self::class,
+                ],
+            ],
+            $config
+        );
+        return GeneralUtility::makeInstance(UriBuilder::class)->buildUriFromRoute('pages_set_search', $mergedConfiguration);
     }
 
     /**
@@ -133,7 +145,9 @@ class SetSearchController
         /** @var PageTreeView $tree */
         $tree = GeneralUtility::makeInstance(PageTreeView::class);
         $tree->init(' AND ' . $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW));
-        $tree->addField('no_search');
+        foreach ($this->getExtensionConfiguration('fields') as $fieldName) {
+            $tree->addField($fieldName);
+        }
         $tree->addField('perms_userid');
         $tree->addField('perms_groupid');
         $tree->addField('perms_user');
@@ -153,34 +167,4 @@ class SetSearchController
         return $tree;
     }
 
-    protected function checkPermissionsForRow($row): bool
-    {
-        if ($this->getBackendUser()->isAdmin()) {
-            return true;
-        }
-
-        if ($this->getBackendUser()->doesUserHaveAccess($row, self::PERMISSION_EDIT_PAGE)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function getBackendUser(): BackendUserAuthentication
-    {
-        return $GLOBALS['BE_USER'];
-    }
-
-    protected function setNoSearchValue(array $uids, int $value)
-    {
-        $data = [];
-        foreach ($uids as $uid) {
-            $data['pages'][$uid]['no_search'] = $value;
-        }
-
-        /** @var DataHandler $dataHandler */
-        $dataHandler = GeneralUtility::makeInstance(DataHandler::class);
-        $dataHandler->start($data, []);
-        $dataHandler->process_datamap();
-    }
 }

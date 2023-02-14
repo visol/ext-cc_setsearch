@@ -6,7 +6,7 @@
 			<trans-unit id="title">
 				<source>Set pages searchable (recursively)</source>
 			</trans-unit>
-			<trans-unit id="searchable">
+			<trans-unit id="no_search">
 				<source>Searchable</source>
 			</trans-unit>
 			<trans-unit id="setSearchable">

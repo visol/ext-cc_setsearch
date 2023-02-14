@@ -1,0 +1,4 @@
+# cat=basic//1; type=string; label= Comma-separated list of boolean fields to set recursively : Configure what columns are going to be displayed in the BE module.
+fields = no_search
+# cat=basic//2; type=string; label= Comma-separated list of labels : Labels must correspond to fields defined above.
+labels = LLL:EXT:frontend/Resources/Private/Language/locallang_tca.xlf:pages.no_search
