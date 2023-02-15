@@ -32,7 +32,10 @@ class SetSearchItemProvider extends RecordProvider
         $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
         return [
             'data-callback-module' => 'TYPO3/CMS/CcSetsearch/ContextMenuActions',
-            'data-pages-new-multiple-url' => (string)$uriBuilder->buildUriFromRoute('pages_set_search', ['id' => $this->record['uid'] ?? 0]),
+            'data-pages-new-multiple-url' => (string)$uriBuilder->buildUriFromRoute(
+                'pages_set_search',
+                ['id' => $this->record['uid'] ?? 0]
+            ),
         ];
     }
 
