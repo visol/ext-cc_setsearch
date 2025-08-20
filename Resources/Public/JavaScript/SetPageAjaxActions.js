@@ -1,35 +1,38 @@
+// File: SetPageAjaxActions.js
+import $ from 'jquery';
+import AjaxRequest from "@typo3/core/ajax/ajax-request.js";
+
 /**
- * Module: TYPO3/CMS/CcSetsearch/SetPageAjaxActions
- *
- * @exports TYPO3/CMS/CcSetsearch/ContextMenuActions
+ * @module @visol/CcSetsearch/SetPageAjaxActions
  */
+const SetPageAjaxActions = {};
 
-define(['jquery', 'TYPO3/CMS/Core/Ajax/AjaxRequest'], function ($, AjaxRequest) {
-  'use strict';
+// Attach click event for elements with class `change-permission`
+$('.change-permission').on('click', function (e) {
+    e.preventDefault();
+    const el = this;
 
-  /**
-   * @exports TYPO3/CMS/CcSetsearch/ContextMenuActions
-   */
-  const SetPageAjaxActions = {};
+    new AjaxRequest(TYPO3.settings.ajaxUrls['pages_set_search_ajax'])
+        .withQueryArguments({
+            uid: $(el).data('uid'),
+            field: $(el).data('field'),
+        })
+        .get()
+        .then(async function (response) {
+            const resolved = await response.resolve();
 
-    $('.change-permission').click(function(e) {
-        e.preventDefault();
-        const el = this;
-        new AjaxRequest(TYPO3.settings.ajaxUrls['pages_set_search_ajax'])
-            .withQueryArguments({uid: $(this).data('uid'), field: $(this).data('field')})
-            .get()
-            .then(async function (response) {
-                const resolved = await response.resolve();
-                $(el)
-                    .removeClass(['fa-times', 'fa-check', 'text-success', 'text-danger'])
+            $(el).removeClass('fa-times fa-check text-success text-danger');
 
-                if (resolved.result !== null) {
-                    $(el)
-                        .addClass(resolved.result ? ['fa-times', 'text-danger'] : ['fa-check', 'text-success']);
-                }
-            });
-        return false
-    })
+            if (resolved.result !== null) {
+                $(el).addClass(
+                    resolved.result
+                        ? 'fa-times text-danger'
+                        : 'fa-check text-success'
+                );
+            }
+        });
 
-  return SetPageAjaxActions;
+    return false;
 });
+
+export default SetPageAjaxActions;

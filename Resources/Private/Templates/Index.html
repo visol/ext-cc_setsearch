@@ -9,16 +9,28 @@
     <f:translate key="{LLPrefix}title"/>
 </h1>
 <div>
-
     <div class="form-group">
-        <label for="depth">
-            <f:translate key="LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:Depth"/>
-            :</label>
+        <form id="set-page-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="depth" class="form-label">
+                        <f:translate key="LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:Depth" />
+                    </label>
+                    <select name="depth" id="depth" class="form-select">
+                        <f:for each="{depthOptions}" as="depthOption" key="depthOptionKey">
+                            <option value="{depthOptionKey}" {f:if(condition: '{depthOptionKey} == {depth}', then: 'selected="selected"')}>{depthOption}</option>
+                        </f:for>
+                    </select>
+                </div>
+            </div>
+        </form>
+        <f:comment>
         <f:form.select class="form-control"
                        id="depth"
                        value="{depth}"
                        options="{depthOptions}"
                        additionalAttributes="{onchange: 'jumpToUrl(\'{depthBaseUrl}\'.replace(\'__DEPTH__\', this.options[this.selectedIndex].value), this);'}"/>
+        </f:comment>
     </div>
 
     <div class="panel panel-default panel-space">
@@ -62,13 +74,13 @@
                                         <f:if condition="{data.row.{field.name}}">
                                             <f:then>
                                                 <span class="t3-icon change-permission fa fa-times text-danger"
-                                                      data-uid="{data.row.uid}"
+                                                      data-contextmenu-uid="{data.row.uid}"
                                                       data-field="{field.name}"
                                                       style="cursor: pointer"></span>
                                             </f:then>
                                             <f:else>
                                                 <span class="t3-icon change-permission fa fa-check text-success"
-                                                      data-uid="{data.row.uid}"
+                                                      data-contextmenu-uid="{data.row.uid}"
                                                       data-field="{field.name}"
                                                       style="cursor: pointer"></span>
                                             </f:else>

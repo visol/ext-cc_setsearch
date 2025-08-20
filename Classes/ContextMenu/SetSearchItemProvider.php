@@ -2,11 +2,12 @@
 
 namespace Visol\CcSetsearch\ContextMenu;
 
-use TYPO3\CMS\Backend\ContextMenu\ItemProviders\RecordProvider;
+use TYPO3\CMS\Backend\ContextMenu\ItemProviders\PageProvider;
+use TYPO3\CMS\Backend\ContextMenu\ItemProviders\ProviderInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class SetSearchItemProvider extends RecordProvider
+class SetSearchItemProvider extends PageProvider implements ProviderInterface
 {
     protected $itemsConfiguration = [
         'pagesSetSearch' => [
@@ -30,12 +31,15 @@ class SetSearchItemProvider extends RecordProvider
     protected function getAdditionalAttributes(string $itemName): array
     {
         $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        $url = (string) $uriBuilder->buildUriFromRoute(
+            'pages_set_search',
+            [
+                'id' => $this->record['uid'] ?? 0,
+            ]
+        );
         return [
-            'data-callback-module' => 'TYPO3/CMS/CcSetsearch/ContextMenuActions',
-            'data-pages-new-multiple-url' => (string)$uriBuilder->buildUriFromRoute(
-                'pages_set_search',
-                ['id' => $this->record['uid'] ?? 0]
-            ),
+            'data-callback-module' => '@visol/CcSetsearch/ContextMenuActions',
+            'data-pages-new-multiple-url' => $url,
         ];
     }
 
@@ -60,13 +64,10 @@ class SetSearchItemProvider extends RecordProvider
         if (in_array($itemName, $this->disabledItems, true)) {
             return false;
         }
-        $canRender = false;
-        switch ($itemName) {
-            case 'pagesSetSearch':
-                $canRender = $this->canShow();
-                break;
+        if ($itemName === 'pagesSetSearch') {
+            return $this->canShow();
         }
-        return $canRender;
+        return false;
     }
 
     protected function canShow(): bool

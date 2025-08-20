@@ -15,12 +15,7 @@ trait BackendRecordTrait {
         if ($this->getBackendUser()->isAdmin()) {
             return true;
         }
-
-        if ($this->getBackendUser()->doesUserHaveAccess($row, $this->permissionEditPage)) {
-            return true;
-        }
-
-        return false;
+        return (bool) $this->getBackendUser()->doesUserHaveAccess($row, $this->permissionEditPage);
     }
 
     protected function update(array $uids, string $field, int $value)

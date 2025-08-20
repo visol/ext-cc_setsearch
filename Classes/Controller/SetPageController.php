@@ -41,13 +41,9 @@ class SetPageController
 
     public function mainAction(ServerRequestInterface $request): ResponseInterface
     {
-        // Load additional JS
-        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/CcSetsearch/SetPageAjaxActions');
+        $this->pageRenderer->loadJavaScriptModule('@visol/CcSetsearch/SetPageAjaxActions');
 
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName(
-            'EXT:cc_setsearch/Resources/Private/Templates/Index.html'
-        ));
+        $moduleTemplate = $this->moduleTemplateFactory->create($request);
 
         $id = (int)$request->getQueryParams()['id'];
         $depth = $request->getQueryParams()['depth'] ? (int)$request->getQueryParams()['depth'] : 3;
@@ -61,9 +57,9 @@ class SetPageController
             $this->update($ids, $field, (int)($cmd === 'unset'));
         }
 
-        $view->assign('depthBaseUrl', $this->generateUrl(['id' => $id, 'depth' => '__DEPTH__',]));
-        $view->assign('idBaseUrl', $this->generateUrl(['depth' => $depth,]));
-        $view->assign('cmdBaseUrl', $this->generateUrl(['id' => $id, 'depth' => $depth,]));
+        $moduleTemplate->assign('depthBaseUrl', $this->generateUrl(['id' => $id, 'depth' => '__DEPTH__',]));
+        $moduleTemplate->assign('idBaseUrl', $this->generateUrl(['depth' => $depth,]));
+        $moduleTemplate->assign('cmdBaseUrl', $this->generateUrl(['id' => $id, 'depth' => $depth,]));
 
         $depthOptions = [];
         foreach ([1, 2, 3, 4, 10] as $depthLevel) {
@@ -72,7 +68,7 @@ class SetPageController
                     'beuser');
         }
 
-        $view->assignMultiple([
+        $moduleTemplate->assignMultiple([
             'depth' => $depth,
             'depthOptions' => $depthOptions,
             'LLPrefix' => 'LLL:EXT:cc_setsearch/Resources/Private/Language/locallang.xlf:',
@@ -80,9 +76,7 @@ class SetPageController
             'fields' => $this->getConfiguredFields(),
         ]);
 
-        $this->moduleTemplate = $this->moduleTemplateFactory->create($request);
-        $this->moduleTemplate->setContent($view->render());
-        return new HtmlResponse($this->moduleTemplate->renderContent());
+        return $moduleTemplate->renderResponse('Index');
     }
 
     /**
@@ -154,12 +148,12 @@ class SetPageController
         $tree->addField('perms_group');
         $tree->addField('perms_everybody');
 
-        if ($id) {
+        if ($id !== 0) {
             $pageInfo = BackendUtility::readPageAccess($id, ' 1=1');
-            $tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getIcon($id)];
+            //$tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getIcon($id)];
         } else {
             $pageInfo = ['title' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'], 'uid' => 0, 'pid' => 0];
-            $tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getRootIcon($pageInfo)];
+            //  $tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getRootIcon($pageInfo)];
         }
 
         $tree->getTree($id, $depth, '');
