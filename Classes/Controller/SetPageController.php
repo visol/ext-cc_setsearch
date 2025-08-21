@@ -4,40 +4,31 @@ namespace Visol\CcSetsearch\Controller;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Backend\Attribute\AsController;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Tree\View\PageTreeView;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Imaging\IconFactory;
+use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
 use Visol\CcSetsearch\Traits\BackendRecordTrait;
 use Visol\CcSetsearch\Traits\ExtensionConfigurationTrait;
 
+#[AsController]
 class SetPageController
 {
     use ExtensionConfigurationTrait;
     use BackendRecordTrait;
 
-    protected ModuleTemplate $moduleTemplate;
-
-    protected IconFactory $iconFactory;
-
-    protected ModuleTemplateFactory $moduleTemplateFactory;
-
-    protected PageRenderer $pageRenderer;
-
-    public function __construct()
-    {
-        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
-        $this->moduleTemplateFactory = GeneralUtility::makeInstance(ModuleTemplateFactory::class);
-        $this->pageRenderer = GeneralUtility::makeInstance(PageRenderer::class);
-    }
+    public function __construct(
+        protected readonly ModuleTemplateFactory $moduleTemplateFactory,
+        protected readonly PageRenderer $pageRenderer,
+        protected readonly IconFactory $iconFactory,
+    ) {}
 
     public function mainAction(ServerRequestInterface $request): ResponseInterface
     {
@@ -142,23 +133,30 @@ class SetPageController
         foreach ($this->getExtensionConfiguration('fields') as $fieldName) {
             $tree->addField($fieldName);
         }
+
         $tree->addField('perms_userid');
         $tree->addField('perms_groupid');
         $tree->addField('perms_user');
         $tree->addField('perms_group');
         $tree->addField('perms_everybody');
 
-        if ($id !== 0) {
+        if ($id > 0) {
             $pageInfo = BackendUtility::readPageAccess($id, ' 1=1');
-            //$tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getIcon($id)];
+            $icon = $this->iconFactory->getIconForRecord('pages', $pageInfo, IconSize::SMALL);
         } else {
             $pageInfo = ['title' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'], 'uid' => 0, 'pid' => 0];
-            //  $tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getRootIcon($pageInfo)];
+            $icon = $this->iconFactory->getIcon('apps-pagetree-root', IconSize::SMALL);
         }
+        $iconMarkup = '<span title="' . BackendUtility::getRecordIconAltText($pageInfo, 'pages') . '">' . $icon->render() . '</span>';
+
+        $tree->tree[] = [
+            'row' => $pageInfo,
+            'HTML' => '',
+            'icon' => $iconMarkup
+        ];
 
         $tree->getTree($id, $depth, '');
 
         return $tree;
     }
-
 }

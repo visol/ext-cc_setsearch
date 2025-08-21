@@ -16,10 +16,10 @@
                     <label for="depth" class="form-label">
                         <f:translate key="LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:Depth" />
                     </label>
-                    <select name="depth" id="depth" class="form-select">
-                        <f:for each="{depthOptions}" as="depthOption" key="depthOptionKey">
+                    <select name="depth" id="depth" class="form-select" onchange="alert('test')"><!--  onchange="jumpToUrl({depthBaseUrl}.replace('__DEPTH__', this.options[this.selectedIndex].value), this);"-->
+                       <f:for each="{depthOptions}" as="depthOption" key="depthOptionKey">
                             <option value="{depthOptionKey}" {f:if(condition: '{depthOptionKey} == {depth}', then: 'selected="selected"')}>{depthOption}</option>
-                        </f:for>
+                       </f:for>
                     </select>
                 </div>
             </div>
@@ -63,10 +63,13 @@
                                 </f:comment>
 
                                 <td style="text-align: left" class="nowrap">
-                                    <a href="{idBaseUrl}&id={data.row.uid}">
-                                        <f:format.raw>{data.depthData}{data.HTML}</f:format.raw>
-                                        {data.row.title -> f:format.crop(maxCharacters:20)}
-                                    </a>
+                                    <f:spaceless>
+                                        <a href="{idBaseUrl}&id={data.row.uid}">
+                                            {data.depthData -> f:format.raw()}{data.HTML -> f:format.raw()}
+                                            <f:if condition="{data.icon}">{data.icon -> f:format.raw()}</f:if>
+                                            {data.row.title -> f:format.crop(maxCharacters:20)}
+                                        </a>
+                                    </f:spaceless>
                                 </td>
 
                                 <f:for each="{fields}" as="field">
