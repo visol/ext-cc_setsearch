@@ -1,126 +1,132 @@
-<script type="text/javascript">
-    function jumpToUrl(URL) {
-        window.location.href = URL;
-        return false;
-    }
-</script>
+<f:layout name="Module"/>
 
-<h1>
-    <f:translate key="{LLPrefix}title"/>
-</h1>
-<div>
-    <div class="form-group">
-        <form id="set-page-form">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="depth" class="form-label">
-                        <f:translate key="LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:Depth" />
-                    </label>
-                    <select name="depth" id="depth" class="form-select">
-                        <f:for each="{depthOptions}" as="depthOption" key="depthOptionKey">
-                            <option value="{depthOptionKey}" {f:if(condition: '{depthOptionKey} == {depth}', then: 'selected="selected"')}>{depthOption}</option>
-                        </f:for>
-                    </select>
+<f:section name="Content">
+    <f:be.pageRenderer includeJavaScriptModules="{0:'@visol/cc-setsearch/SetPageAjaxActions.js'}"/>
+
+    <script type="text/javascript">
+        function jumpToUrl(URL) {
+            window.location.href = URL;
+            return false;
+        }
+    </script>
+
+    <h1>
+        <f:translate key="{LLPrefix}title"/>
+    </h1>
+    <div>
+        <div class="form-group">
+            <form id="set-page-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="depth" class="form-label">
+                            <f:translate key="LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:Depth" />
+                        </label>
+                        <select name="depth" id="depth" class="form-select" onchange="alert('test')"><!--  onchange="jumpToUrl({depthBaseUrl}.replace('__DEPTH__', this.options[this.selectedIndex].value), this);"-->
+                           <f:for each="{depthOptions}" as="depthOption" key="depthOptionKey">
+                                <option value="{depthOptionKey}" {f:if(condition: '{depthOptionKey} == {depth}', then: 'selected="selected"')}>{depthOption}</option>
+                            </f:for>
+                        </select>
+                    </div>
                 </div>
-            </div>
-        </form>
-        <f:comment>
-        <f:form.select class="form-control"
-                       id="depth"
-                       value="{depth}"
-                       options="{depthOptions}"
-                       additionalAttributes="{onchange: 'jumpToUrl(\'{depthBaseUrl}\'.replace(\'__DEPTH__\', this.options[this.selectedIndex].value), this);'}"/>
-        </f:comment>
-    </div>
+            </form>
+            <f:comment>
+            <f:form.select class="form-control"
+                           id="depth"
+                           value="{depth}"
+                           options="{depthOptions}"
+                           additionalAttributes="{onchange: 'jumpToUrl(\'{depthBaseUrl}\'.replace(\'__DEPTH__\', this.options[this.selectedIndex].value), this);'}"/>
+            </f:comment>
+        </div>
 
-    <div class="panel panel-default panel-space">
-        <div class="table-fit">
-            <table class="table table-striped table-hover" id="typo3-permissionList">
-                <thead>
-                <tr>
-                    <th>&nbsp;</th>
-                    <f:for each="{fields}" as="field">
-                        <th style="text-align: center">
-                            <f:translate key="{field.label}"/>
-                            <div class="form-group">
+        <div class="panel panel-default panel-space">
+            <div class="table-fit">
+                <table class="table table-striped table-hover" id="typo3-permissionList">
+                    <thead>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <f:for each="{fields}" as="field">
+                            <th style="text-align: center">
+                                <f:translate key="{field.label}"/>
+                                <div class="form-group">
+                                    <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default">
+                                        <span class="t3-icon fa fa-check text-success"></span>
+                                    </a>
+                                    <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default">
+                                        <span class="t3-icon fa fa-times text-danger"></span>
+                                    </a>
+                                </div>
+                            </th>
+                        </f:for>
+                    </tr>
+                    </thead>
+                    <f:for each="{viewTree}" as="data">
+                        <tr>
+                            <f:if condition="{data.row.uid}">
+                                <f:then>
+                                    <f:comment>
+                                        A "normal" page row is rendered, not the root page
+                                    </f:comment>
+
+                                    <td style="text-align: left" class="nowrap">
+                                        <f:spaceless>
+                                            <a href="{idBaseUrl}&id={data.row.uid}">
+                                                {data.depthData -> f:format.raw()}{data.HTML -> f:format.raw()}
+                                                <f:if condition="{data.icon}">{data.icon -> f:format.raw()}</f:if>
+                                                {data.row.title -> f:format.crop(maxCharacters:20)}
+                                            </a>
+                                        </f:spaceless>
+                                    </td>
+
+                                    <f:for each="{fields}" as="field">
+                                        <td style="text-align: center">
+                                            <f:if condition="{data.row.{field.name}}">
+                                                <f:then>
+                                                    <span class="t3-icon change-permission fa fa-times text-danger"
+                                                          data-contextmenu-uid="{data.row.uid}"
+                                                          data-field="{field.name}"
+                                                          style="cursor: pointer"></span>
+                                                </f:then>
+                                                <f:else>
+                                                    <span class="t3-icon change-permission fa fa-check text-success"
+                                                          data-contextmenu-uid="{data.row.uid}"
+                                                          data-field="{field.name}"
+                                                          style="cursor: pointer"></span>
+                                                </f:else>
+                                            </f:if>
+                                        </td>
+                                    </f:for>
+                                </f:then>
+
+                                <f:else>
+                                    <f:comment>
+                                        Root page row is rendered
+                                    </f:comment>
+
+                                    <td style="text-align: left" class="nowrap">
+                                        <f:format.raw>{data.HTML}</f:format.raw>
+                                        {data.row.title -> f:format.crop(maxCharacters:20)}
+                                    </td>
+                                    <td class="nowrap"></td>
+                                </f:else>
+                            </f:if>
+                        </tr>
+                    </f:for>
+
+                    <tr>
+                        <td></td>
+                        <f:for each="{fields}" as="field">
+                            <td style="text-align: center">
                                 <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default">
                                     <span class="t3-icon fa fa-check text-success"></span>
                                 </a>
                                 <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default">
                                     <span class="t3-icon fa fa-times text-danger"></span>
                                 </a>
-                            </div>
-                        </th>
-                    </f:for>
-                </tr>
-                </thead>
-                <f:for each="{viewTree}" as="data">
-                    <tr>
-                        <f:if condition="{data.row.uid}">
-                            <f:then>
-                                <f:comment>
-                                    A "normal" page row is rendered, not the root page
-                                </f:comment>
-
-                                <td style="text-align: left" class="nowrap">
-                                    <f:spaceless>
-                                        <a href="{idBaseUrl}&id={data.row.uid}">
-                                            {data.depthData -> f:format.raw()}{data.HTML -> f:format.raw()}
-                                            <f:if condition="{data.icon}">{data.icon -> f:format.raw()}</f:if>
-                                            {data.row.title -> f:format.crop(maxCharacters:20)}
-                                        </a>
-                                    </f:spaceless>
-                                </td>
-
-                                <f:for each="{fields}" as="field">
-                                    <td style="text-align: center">
-                                        <f:if condition="{data.row.{field.name}}">
-                                            <f:then>
-                                                <span class="t3-icon change-permission fa fa-times text-danger"
-                                                      data-contextmenu-uid="{data.row.uid}"
-                                                      data-field="{field.name}"
-                                                      style="cursor: pointer"></span>
-                                            </f:then>
-                                            <f:else>
-                                                <span class="t3-icon change-permission fa fa-check text-success"
-                                                      data-contextmenu-uid="{data.row.uid}"
-                                                      data-field="{field.name}"
-                                                      style="cursor: pointer"></span>
-                                            </f:else>
-                                        </f:if>
-                                    </td>
-                                </f:for>
-                            </f:then>
-
-                            <f:else>
-                                <f:comment>
-                                    Root page row is rendered
-                                </f:comment>
-
-                                <td style="text-align: left" class="nowrap">
-                                    <f:format.raw>{data.HTML}</f:format.raw>
-                                    {data.row.title -> f:format.crop(maxCharacters:20)}
-                                </td>
-                                <td class="nowrap"></td>
-                            </f:else>
-                        </f:if>
+                            </td>
+                        </f:for>
                     </tr>
-                </f:for>
-
-                <tr>
-                    <td></td>
-                    <f:for each="{fields}" as="field">
-                        <td style="text-align: center">
-                            <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default">
-                                <span class="t3-icon fa fa-check text-success"></span>
-                            </a>
-                            <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default">
-                                <span class="t3-icon fa fa-times text-danger"></span>
-                            </a>
-                        </td>
-                    </f:for>
-                </tr>
-            </table>
+                </table>
+            </div>
         </div>
     </div>
-</div>
+</f:section>

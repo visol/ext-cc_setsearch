@@ -2,10 +2,10 @@
 
 return [
     'dependencies' => ['core', 'backend'],
-    'tags' => [
-        'backend.contextmenu',
-    ],
+//    'tags' => [
+//        'backend.contextmenu',
+//    ],
     'imports' => [
-        '@visol/CcSetsearch/' => 'EXT:cc_setsearch/Resources/Public/JavaScript/',
+        '@visol/cc-setsearch/' => 'EXT:cc_setsearch/Resources/Public/JavaScript/',
     ],
 ];

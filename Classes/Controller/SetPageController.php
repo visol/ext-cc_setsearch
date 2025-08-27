@@ -32,7 +32,6 @@ class SetPageController
 
     public function mainAction(ServerRequestInterface $request): ResponseInterface
     {
-        $this->pageRenderer->loadJavaScriptModule('@visol/CcSetsearch/SetPageAjaxActions');
 
         $moduleTemplate = $this->moduleTemplateFactory->create($request);
 

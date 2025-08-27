@@ -38,7 +38,7 @@ class SetSearchItemProvider extends PageProvider implements ProviderInterface
             ]
         );
         return [
-            'data-callback-module' => '@visol/CcSetsearch/ContextMenuActions',
+            'data-callback-module' => '@visol/cc-setsearch/ContextMenuActions',
             'data-pages-new-multiple-url' => $url,
         ];
     }
