@@ -48,11 +48,11 @@
                             <th style="text-align: center">
                                 <f:translate key="{field.label}"/>
                                 <div class="form-group">
-                                    <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default">
-                                        <span class="t3-icon fa fa-check text-success"></span>
+                                    <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default btn-icon change-permission text-success">
+                                        <core:icon identifier="actions-check" />
                                     </a>
-                                    <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default">
-                                        <span class="t3-icon fa fa-times text-danger"></span>
+                                    <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default btn-icon change-permission text-danger">
+                                        <core:icon identifier="actions-close" />
                                     </a>
                                 </div>
                             </th>
@@ -81,16 +81,26 @@
                                         <td style="text-align: center">
                                             <f:if condition="{data.row.{field.name}}">
                                                 <f:then>
-                                                    <span class="t3-icon change-permission fa fa-times text-danger"
+                                                    <span class="btn btn-default btn-icon change-permission text-danger"
                                                           data-contextmenu-uid="{data.row.uid}"
                                                           data-field="{field.name}"
-                                                          style="cursor: pointer"></span>
+                                                    >
+                                                        <core:icon identifier="actions-close" />
+                                                    </span>
                                                 </f:then>
                                                 <f:else>
-                                                    <span class="t3-icon change-permission fa fa-check text-success"
+                                                    <span class="btn btn-default btn-icon change-permission text-success"
+                                                          data-contextmenu-uid="{data.row.uid}"
+                                                          data-field="{field.name}"
+                                                    >
+                                                        <core:icon identifier="actions-check" />
+                                                    </span>
+                                                    <f:comment>
+                                                    <span class="btn btn-default btn-icon change-permission text-danger"
                                                           data-contextmenu-uid="{data.row.uid}"
                                                           data-field="{field.name}"
                                                           style="cursor: pointer"></span>
+                                                    </f:comment>
                                                 </f:else>
                                             </f:if>
                                         </td>
@@ -116,12 +126,14 @@
                         <td></td>
                         <f:for each="{fields}" as="field">
                             <td style="text-align: center">
-                                <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default">
-                                    <span class="t3-icon fa fa-check text-success"></span>
-                                </a>
-                                <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default">
-                                    <span class="t3-icon fa fa-times text-danger"></span>
-                                </a>
+                                <div class="form-group">
+                                    <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default btn-icon change-permission text-success">
+                                        <core:icon identifier="actions-check" />
+                                    </a>
+                                    <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default btn-icon change-permission text-danger">
+                                        <core:icon identifier="actions-close" />
+                                    </a>
+                                </div>
                             </td>
                         </f:for>
                     </tr>
