@@ -14,8 +14,8 @@ class SetSearchItemProvider extends PageProvider implements ProviderInterface
             'type' => 'item',
             'label' => 'LLL:EXT:cc_setsearch/Resources/Private/Language/locallang.xlf:title',
             'iconIdentifier' => 'actions-search',
-            'callbackAction' => 'pageSetSearch'
-        ]
+            'callbackAction' => 'pageSetSearch',
+        ],
     ];
 
     public function canHandle(): bool
@@ -39,7 +39,7 @@ class SetSearchItemProvider extends PageProvider implements ProviderInterface
         );
         return [
             'data-callback-module' => '@visol/cc-setsearch/ContextMenuActions',
-            'data-pages-new-multiple-url' => $url,
+            'data-pages-cc-setsearch' => $url,
         ];
     }
 
@@ -51,7 +51,7 @@ class SetSearchItemProvider extends PageProvider implements ProviderInterface
         $localItems = $this->prepareItems($this->itemsConfiguration);
 
         if (isset($items['more'])) {
-            $items['more']['childItems'] +=  $localItems; // we merge the item at the end
+            $items['more']['childItems'] += $localItems; // we merge the item at the end
         }
 
         //passes array of items to the next item provider

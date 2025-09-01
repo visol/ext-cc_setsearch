@@ -5,8 +5,8 @@ namespace Visol\CcSetsearch\Traits;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-trait ExtensionConfigurationTrait {
-
+trait ExtensionConfigurationTrait
+{
     protected function getExtensionConfiguration(string $key): array
     {
         $configurations = GeneralUtility::makeInstance(

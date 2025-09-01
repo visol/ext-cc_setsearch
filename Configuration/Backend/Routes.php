@@ -1,6 +1,5 @@
 <?php
 
-
 use Visol\CcSetsearch\Controller\SetPageController;
 
 return [

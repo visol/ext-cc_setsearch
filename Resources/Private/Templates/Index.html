@@ -3,13 +3,6 @@
 <f:section name="Content">
     <f:be.pageRenderer includeJavaScriptModules="{0:'@visol/cc-setsearch/SetPageAjaxActions.js'}"/>
 
-    <script type="text/javascript">
-        function jumpToUrl(URL) {
-            window.location.href = URL;
-            return false;
-        }
-    </script>
-
     <h1>
         <f:translate key="{LLPrefix}title"/>
     </h1>
@@ -21,7 +14,7 @@
                         <label for="depth" class="form-label">
                             <f:translate key="LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:Depth" />
                         </label>
-                        <select name="depth" id="depth" class="form-select" onchange="alert('test')"><!--  onchange="jumpToUrl({depthBaseUrl}.replace('__DEPTH__', this.options[this.selectedIndex].value), this);"-->
+                        <select name="depth" id="depth" class="form-select" data-depth-base-url="{depthBaseUrl}">
                            <f:for each="{depthOptions}" as="depthOption" key="depthOptionKey">
                                 <option value="{depthOptionKey}" {f:if(condition: '{depthOptionKey} == {depth}', then: 'selected="selected"')}>{depthOption}</option>
                             </f:for>
@@ -29,13 +22,6 @@
                     </div>
                 </div>
             </form>
-            <f:comment>
-            <f:form.select class="form-control"
-                           id="depth"
-                           value="{depth}"
-                           options="{depthOptions}"
-                           additionalAttributes="{onchange: 'jumpToUrl(\'{depthBaseUrl}\'.replace(\'__DEPTH__\', this.options[this.selectedIndex].value), this);'}"/>
-            </f:comment>
         </div>
 
         <div class="panel panel-default panel-space">
@@ -48,10 +34,10 @@
                             <th style="text-align: center">
                                 <f:translate key="{field.label}"/>
                                 <div class="form-group">
-                                    <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default btn-icon change-permission text-success">
+                                    <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default btn-icon text-success">
                                         <core:icon identifier="actions-check" />
                                     </a>
-                                    <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default btn-icon change-permission text-danger">
+                                    <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default btn-icon text-danger">
                                         <core:icon identifier="actions-close" />
                                     </a>
                                 </div>
@@ -82,7 +68,7 @@
                                             <f:if condition="{data.row.{field.name}}">
                                                 <f:then>
                                                     <span class="btn btn-default btn-icon change-permission text-danger"
-                                                          data-contextmenu-uid="{data.row.uid}"
+                                                          data-uid="{data.row.uid}"
                                                           data-field="{field.name}"
                                                     >
                                                         <core:icon identifier="actions-close" />
@@ -90,17 +76,11 @@
                                                 </f:then>
                                                 <f:else>
                                                     <span class="btn btn-default btn-icon change-permission text-success"
-                                                          data-contextmenu-uid="{data.row.uid}"
+                                                          data-uid="{data.row.uid}"
                                                           data-field="{field.name}"
                                                     >
                                                         <core:icon identifier="actions-check" />
                                                     </span>
-                                                    <f:comment>
-                                                    <span class="btn btn-default btn-icon change-permission text-danger"
-                                                          data-contextmenu-uid="{data.row.uid}"
-                                                          data-field="{field.name}"
-                                                          style="cursor: pointer"></span>
-                                                    </f:comment>
                                                 </f:else>
                                             </f:if>
                                         </td>
@@ -127,10 +107,10 @@
                         <f:for each="{fields}" as="field">
                             <td style="text-align: center">
                                 <div class="form-group">
-                                    <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default btn-icon change-permission text-success">
+                                    <a href="{cmdBaseUrl}&cmd=set&field={field.name}" class="btn btn-default btn-icon text-success">
                                         <core:icon identifier="actions-check" />
                                     </a>
-                                    <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default btn-icon change-permission text-danger">
+                                    <a href="{cmdBaseUrl}&cmd=unset&field={field.name}" class="btn btn-default btn-icon text-danger">
                                         <core:icon identifier="actions-close" />
                                     </a>
                                 </div>

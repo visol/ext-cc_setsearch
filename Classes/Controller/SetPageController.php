@@ -21,8 +21,8 @@ use Visol\CcSetsearch\Traits\ExtensionConfigurationTrait;
 #[AsController]
 class SetPageController
 {
-    use ExtensionConfigurationTrait;
     use BackendRecordTrait;
+    use ExtensionConfigurationTrait;
 
     public function __construct(
         protected readonly ModuleTemplateFactory $moduleTemplateFactory,
@@ -32,30 +32,32 @@ class SetPageController
 
     public function mainAction(ServerRequestInterface $request): ResponseInterface
     {
-
         $moduleTemplate = $this->moduleTemplateFactory->create($request);
 
-        $id = (int)$request->getQueryParams()['id'];
-        $depth = $request->getQueryParams()['depth'] ? (int)$request->getQueryParams()['depth'] : 3;
+        $id = (int) $request->getQueryParams()['id'];
+        $depth = $request->getQueryParams()['depth'] ? (int) $request->getQueryParams()['depth'] : 3;
         $cmd = $request->getQueryParams()['cmd'];
         $field = $request->getQueryParams()['field'];
 
         // We update the records if required
         if (in_array($field, $this->getExtensionConfiguration('fields'), true) &&
-            in_array($cmd, ['set', 'unset'])) {
+            in_array($cmd, ['set', 'unset']))
+        {
             $ids = $this->getRecursivePageUids($id, $depth);
-            $this->update($ids, $field, (int)($cmd === 'unset'));
+            $this->update($ids, $field, (int) ($cmd === 'unset'));
         }
 
-        $moduleTemplate->assign('depthBaseUrl', $this->generateUrl(['id' => $id, 'depth' => '__DEPTH__',]));
-        $moduleTemplate->assign('idBaseUrl', $this->generateUrl(['depth' => $depth,]));
-        $moduleTemplate->assign('cmdBaseUrl', $this->generateUrl(['id' => $id, 'depth' => $depth,]));
+        $moduleTemplate->assign('depthBaseUrl', $this->generateUrl(['id' => $id, 'depth' => '__DEPTH__']));
+        $moduleTemplate->assign('idBaseUrl', $this->generateUrl(['depth' => $depth]));
+        $moduleTemplate->assign('cmdBaseUrl', $this->generateUrl(['id' => $id, 'depth' => $depth]));
 
         $depthOptions = [];
         foreach ([1, 2, 3, 4, 10] as $depthLevel) {
             $levelLabel = $depthLevel === 1 ? 'level' : 'levels';
-            $depthOptions[$depthLevel] = $depthLevel . ' ' . LocalizationUtility::translate('LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:' . $levelLabel,
-                    'beuser');
+            $depthOptions[$depthLevel] = $depthLevel . ' ' . LocalizationUtility::translate(
+                'LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:' . $levelLabel,
+                    'beuser'
+                );
         }
 
         $moduleTemplate->assignMultiple([
@@ -151,7 +153,7 @@ class SetPageController
         $tree->tree[] = [
             'row' => $pageInfo,
             'HTML' => '',
-            'icon' => $iconMarkup
+            'icon' => $iconMarkup,
         ];
 
         $tree->getTree($id, $depth, '');

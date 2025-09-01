@@ -12,7 +12,7 @@ class ContextMenuActions {
 
     pageSetSearch(table, uid, dataAttributes) {
         if (table === 'pages') {
-            top.TYPO3.Backend.ContentContainer.setUrl(dataAttributes.pagesNewMultipleUrl);
+            top.TYPO3.Backend.ContentContainer.setUrl(dataAttributes.pagesCcSetsearch);
         }
     }
 };

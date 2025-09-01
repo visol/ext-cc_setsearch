@@ -11,23 +11,21 @@ use Visol\CcSetsearch\Traits\ExtensionConfigurationTrait;
 
 class SetPageAjaxController
 {
-    use ExtensionConfigurationTrait;
     use BackendRecordTrait;
+    use ExtensionConfigurationTrait;
 
     public function mainAction(ServerRequestInterface $request): ResponseInterface
     {
         $nextValue = null;
         $field = $request->getQueryParams()['field'] ?? '';
         if (in_array($field, $this->getExtensionConfiguration('fields'), true)) {
-            $uid = (int)$request->getQueryParams()['uid'];
+            $uid = (int) $request->getQueryParams()['uid'];
             $page = BackendUtility::getRecord('pages', $uid);
             if ($this->checkPermissionsForRow($page)) {
-                $nextValue = (int)!(bool)$page[$field];
+                $nextValue = (int) !(bool)$page[$field];
                 $this->update([$uid], $field, $nextValue);
             }
         }
         return new JsonResponse(['result' => $nextValue]);
     }
-
-
 }
