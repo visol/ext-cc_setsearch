@@ -6,7 +6,7 @@ This package is currently maintained for the following versions:
 
 | TYPO3 Version | Package Version | Branch | Maintained |
 |---------------|-----------------|--------|------------|
-| TYPO3 12.4.x  | 6.x             | master | Yes        |
+| TYPO3 13.4.x  | 6.x             | master | Yes        |
 | TYPO3 11.5.x  | 5.x             | -      | No         |
 | TYPO3 11.5.x  | 4.x             | -      | No         |
 | TYPO3 8.7.x   | 3.x             | -      | No         |
