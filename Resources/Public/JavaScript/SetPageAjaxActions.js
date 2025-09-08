@@ -1,35 +1,68 @@
+import AjaxRequest from "@typo3/core/ajax/ajax-request.js";
+import Icons from '@typo3/backend/icons.js';
+
 /**
- * Module: TYPO3/CMS/CcSetsearch/SetPageAjaxActions
- *
- * @exports TYPO3/CMS/CcSetsearch/ContextMenuActions
+ * @module @visol/cc-setsearch/SetPageAjaxActions
  */
+const SetPageAjaxActions = (() => {
 
-define(['jquery', 'TYPO3/CMS/Core/Ajax/AjaxRequest'], function ($, AjaxRequest) {
-  'use strict';
+    const selectElement = document.getElementById('depth');
+    const depthBaseUrl = selectElement.dataset.depthBaseUrl;
 
-  /**
-   * @exports TYPO3/CMS/CcSetsearch/ContextMenuActions
-   */
-  const SetPageAjaxActions = {};
+    const ajaxUrl = TYPO3.settings.ajaxUrls["pages_set_search_ajax"];
 
-    $('.change-permission').click(function(e) {
+    const handleClick = async (e) => {
+        const el = e.target.closest(".change-permission");
+        if (!el) return;
+
         e.preventDefault();
-        const el = this;
-        new AjaxRequest(TYPO3.settings.ajaxUrls['pages_set_search_ajax'])
-            .withQueryArguments({uid: $(this).data('uid'), field: $(this).data('field')})
-            .get()
-            .then(async function (response) {
-                const resolved = await response.resolve();
-                $(el)
-                    .removeClass(['fa-times', 'fa-check', 'text-success', 'text-danger'])
 
-                if (resolved.result !== null) {
-                    $(el)
-                        .addClass(resolved.result ? ['fa-times', 'text-danger'] : ['fa-check', 'text-success']);
+        try {
+            const response = await new AjaxRequest(ajaxUrl)
+                .withQueryArguments({
+                    uid: Number(el.dataset.uid),
+                    field: el.dataset.field,
+                })
+                .get();
+
+            const { result } = await response.resolve();
+
+            el.classList.remove("text-success", "text-danger");
+            if (result !== null) {
+                if (result) {
+                    el.classList.add("text-danger");
+                    const iconElement = el.querySelector('.t3js-icon');
+                    Icons.getIcon('actions-close', Icons.sizes.small).then((icon) => {
+                        iconElement.outerHTML = icon;
+                    });
+                } else {
+                    el.classList.add("text-success");
+                    const iconElement = el.querySelector('.t3js-icon');
+                    Icons.getIcon('actions-check', Icons.sizes.small).then((icon) => {
+                        iconElement.outerHTML = icon;
+                    });
                 }
-            });
-        return false
-    })
+            }
+        } catch (err) {
+            // Optionally log or handle error state here
+            // console.error(err);
+        }
 
-  return SetPageAjaxActions;
-});
+        return false;
+    };
+
+    const init = () => {
+        document.addEventListener("click", handleClick, false);
+        const select = document.getElementById("depth");
+        select.addEventListener("change", (e) => {
+            const value = e.target.value;
+            const url = depthBaseUrl.replace("__DEPTH__", value);
+            window.location.href = url;
+            return false;
+        });
+    };
+
+    init();
+})();
+
+export default SetPageAjaxActions;

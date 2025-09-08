@@ -6,8 +6,8 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-trait BackendRecordTrait {
-
+trait BackendRecordTrait
+{
     private int $permissionEditPage = 2;
 
     protected function checkPermissionsForRow($row): bool
@@ -15,12 +15,7 @@ trait BackendRecordTrait {
         if ($this->getBackendUser()->isAdmin()) {
             return true;
         }
-
-        if ($this->getBackendUser()->doesUserHaveAccess($row, $this->permissionEditPage)) {
-            return true;
-        }
-
-        return false;
+        return (bool) $this->getBackendUser()->doesUserHaveAccess($row, $this->permissionEditPage);
     }
 
     protected function update(array $uids, string $field, int $value)

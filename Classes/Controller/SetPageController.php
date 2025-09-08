@@ -4,75 +4,63 @@ namespace Visol\CcSetsearch\Controller;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Backend\Attribute\AsController;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Tree\View\PageTreeView;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Imaging\IconFactory;
+use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
 use Visol\CcSetsearch\Traits\BackendRecordTrait;
 use Visol\CcSetsearch\Traits\ExtensionConfigurationTrait;
 
+#[AsController]
 class SetPageController
 {
-    use ExtensionConfigurationTrait;
     use BackendRecordTrait;
+    use ExtensionConfigurationTrait;
 
-    protected ModuleTemplate $moduleTemplate;
-
-    protected IconFactory $iconFactory;
-
-    protected ModuleTemplateFactory $moduleTemplateFactory;
-
-    protected PageRenderer $pageRenderer;
-
-    public function __construct()
-    {
-        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
-        $this->moduleTemplateFactory = GeneralUtility::makeInstance(ModuleTemplateFactory::class);
-        $this->pageRenderer = GeneralUtility::makeInstance(PageRenderer::class);
-    }
+    public function __construct(
+        protected readonly ModuleTemplateFactory $moduleTemplateFactory,
+        protected readonly PageRenderer $pageRenderer,
+        protected readonly IconFactory $iconFactory,
+    ) {}
 
     public function mainAction(ServerRequestInterface $request): ResponseInterface
     {
-        // Load additional JS
-        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/CcSetsearch/SetPageAjaxActions');
+        $moduleTemplate = $this->moduleTemplateFactory->create($request);
 
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName(
-            'EXT:cc_setsearch/Resources/Private/Templates/Index.html'
-        ));
-
-        $id = (int)$request->getQueryParams()['id'];
-        $depth = $request->getQueryParams()['depth'] ? (int)$request->getQueryParams()['depth'] : 3;
+        $id = (int) $request->getQueryParams()['id'];
+        $depth = $request->getQueryParams()['depth'] ? (int) $request->getQueryParams()['depth'] : 3;
         $cmd = $request->getQueryParams()['cmd'];
         $field = $request->getQueryParams()['field'];
 
         // We update the records if required
         if (in_array($field, $this->getExtensionConfiguration('fields'), true) &&
-            in_array($cmd, ['set', 'unset'])) {
+            in_array($cmd, ['set', 'unset']))
+        {
             $ids = $this->getRecursivePageUids($id, $depth);
-            $this->update($ids, $field, (int)($cmd === 'unset'));
+            $this->update($ids, $field, (int) ($cmd === 'unset'));
         }
 
-        $view->assign('depthBaseUrl', $this->generateUrl(['id' => $id, 'depth' => '__DEPTH__',]));
-        $view->assign('idBaseUrl', $this->generateUrl(['depth' => $depth,]));
-        $view->assign('cmdBaseUrl', $this->generateUrl(['id' => $id, 'depth' => $depth,]));
+        $moduleTemplate->assign('depthBaseUrl', $this->generateUrl(['id' => $id, 'depth' => '__DEPTH__']));
+        $moduleTemplate->assign('idBaseUrl', $this->generateUrl(['depth' => $depth]));
+        $moduleTemplate->assign('cmdBaseUrl', $this->generateUrl(['id' => $id, 'depth' => $depth]));
 
         $depthOptions = [];
         foreach ([1, 2, 3, 4, 10] as $depthLevel) {
             $levelLabel = $depthLevel === 1 ? 'level' : 'levels';
-            $depthOptions[$depthLevel] = $depthLevel . ' ' . LocalizationUtility::translate('LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:' . $levelLabel,
-                    'beuser');
+            $depthOptions[$depthLevel] = $depthLevel . ' ' . LocalizationUtility::translate(
+                'LLL:EXT:beuser/Resources/Private/Language/locallang_mod_permission.xlf:' . $levelLabel,
+                    'beuser'
+                );
         }
 
-        $view->assignMultiple([
+        $moduleTemplate->assignMultiple([
             'depth' => $depth,
             'depthOptions' => $depthOptions,
             'LLPrefix' => 'LLL:EXT:cc_setsearch/Resources/Private/Language/locallang.xlf:',
@@ -80,9 +68,7 @@ class SetPageController
             'fields' => $this->getConfiguredFields(),
         ]);
 
-        $this->moduleTemplate = $this->moduleTemplateFactory->create($request);
-        $this->moduleTemplate->setContent($view->render());
-        return new HtmlResponse($this->moduleTemplate->renderContent());
+        return $moduleTemplate->renderResponse('Index');
     }
 
     /**
@@ -148,23 +134,30 @@ class SetPageController
         foreach ($this->getExtensionConfiguration('fields') as $fieldName) {
             $tree->addField($fieldName);
         }
+
         $tree->addField('perms_userid');
         $tree->addField('perms_groupid');
         $tree->addField('perms_user');
         $tree->addField('perms_group');
         $tree->addField('perms_everybody');
 
-        if ($id) {
+        if ($id > 0) {
             $pageInfo = BackendUtility::readPageAccess($id, ' 1=1');
-            $tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getIcon($id)];
+            $icon = $this->iconFactory->getIconForRecord('pages', $pageInfo, IconSize::SMALL);
         } else {
             $pageInfo = ['title' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'], 'uid' => 0, 'pid' => 0];
-            $tree->tree[] = ['row' => $pageInfo, 'HTML' => $tree->getRootIcon($pageInfo)];
+            $icon = $this->iconFactory->getIcon('apps-pagetree-root', IconSize::SMALL);
         }
+        $iconMarkup = '<span title="' . BackendUtility::getRecordIconAltText($pageInfo, 'pages') . '">' . $icon->render() . '</span>';
+
+        $tree->tree[] = [
+            'row' => $pageInfo,
+            'HTML' => '',
+            'icon' => $iconMarkup,
+        ];
 
         $tree->getTree($id, $depth, '');
 
         return $tree;
     }
-
 }
